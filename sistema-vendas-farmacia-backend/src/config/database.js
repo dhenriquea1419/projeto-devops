@@ -22,7 +22,7 @@ async function connectDB() {
     throw new Error(`Falha na conexão: ${error.message}`);
   } finally {
     if (connection) {
-      connection.release(); // Libera a conexão de volta para o pool
+      connection.release(); 
     }
   }
 }
