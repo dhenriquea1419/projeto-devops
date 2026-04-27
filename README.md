@@ -4,15 +4,6 @@
 
 O **PharmaStock** é um sistema web desenvolvido para o gerenciamento de vendas, produtos, clientes e funcionários de uma farmácia.
 
-O projeto foi criado como trabalho final da disciplina de **DevOps**, com o objetivo de aplicar na prática conceitos como:
-
-* Versionamento de código
-* Conteinerização
-* Orquestração de serviços
-* Automação de pipeline
-* Análise de qualidade de software
-
----
 
 ## 👨‍💻 Participantes
 
