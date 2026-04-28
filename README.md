@@ -98,7 +98,10 @@ Principal funcionalidade do sistema:
 
 ### Front-end
 
-* React.js
+*React Native utilizando Expo
+*TypeScript 
+*Expo Router
+
 
 ### Back-end
 
