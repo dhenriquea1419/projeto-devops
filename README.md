@@ -1,8 +1,8 @@
-# PharmaStock – Sistema de Vendas e Controle para Farmácia
+# Sapé Pharma – Sistema de Vendas e Controle para Farmácia
 
 ## 📌 Sobre o Projeto
 
-O **PharmaStock** é um sistema web desenvolvido para o gerenciamento de vendas, produtos, clientes e funcionários de uma farmácia.
+O **Sapé Pharma** é um sistema web desenvolvido para o gerenciamento de vendas, produtos, clientes e funcionários de uma farmácia.
 
 
 ## 👨‍💻 Participantes
@@ -224,6 +224,6 @@ Para análise de:
 
 ## 📚 Conclusão
 
-O projeto **PharmaStock** foi escolhido por ser simples, viável e totalmente alinhado aos requisitos da disciplina de DevOps.
+O projeto **Sapé Pharma** foi escolhido por ser simples, viável e totalmente alinhado aos requisitos da disciplina de DevOps.
 
 Ele permite aplicar de forma prática os principais conceitos estudados durante o semestre, com foco em desenvolvimento moderno, automação e boas práticas de engenharia de software.
