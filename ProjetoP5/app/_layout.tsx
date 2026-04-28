@@ -1,50 +1,31 @@
-import { Stack, useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
-import { AuthProvider, useAuth } from '../hooks/AuthContext';
+import { Stack } from 'expo-router';
+import { useRouter, useSegments } from 'expo-router';
+import { useAuth } from '../hooks/AuthContext';
 
-function RootLayoutNav() {
-  const { user } = useAuth();
+export default function RootLayout() {
   const segments = useSegments();
   const router = useRouter();
+  const { user } = useAuth();
 
   useEffect(() => {
     const inAuthGroup = segments[0] === '(tabs)';
 
-    if (!user) {
-      // Sem usuário logado, sempre vai para login
-      if (inAuthGroup) {
+    if (!user && inAuthGroup) {
+      requestAnimationFrame(() => {
         router.replace('/login');
-      }
-    } else {
-      // Com usuário logado, vai para tabs
-      if (!inAuthGroup && segments[0] === 'login') {
+      });
+    } else if (user && !inAuthGroup) {
+      requestAnimationFrame(() => {
         router.replace('/(tabs)');
-      }
+      });
     }
-  }, [user, segments]);
+  }, [user, segments, router]);
 
   return (
-    <Stack screenOptions={{}}>
-      <Stack.Screen 
-        name="login" 
-        options={{ 
-          headerShown: false,
-        }} 
-      />
-      <Stack.Screen 
-        name="(tabs)" 
-        options={{ 
-          headerShown: false,
-        }} 
-      />
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="login" options={{ headerShown: false }} />
     </Stack>
-  );
-}
-
-export default function RootLayout() {
-  return (
-    <AuthProvider>
-      <RootLayoutNav />
-    </AuthProvider>
   );
 }

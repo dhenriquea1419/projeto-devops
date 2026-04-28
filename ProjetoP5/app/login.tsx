@@ -40,8 +40,8 @@ export default function LoginScreen() {
         <View style={styles.content}>
           {/* Logo/Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Farmácia Control</Text>
-            <Text style={styles.subtitle}>Sistema de Gestão</Text>
+            <Text style={styles.title}>PharmaStock</Text>
+            <Text style={styles.subtitle}>Sistema de Vendas e Controle para Farmácia</Text>
           </View>
 
           {/* Login Form */}
