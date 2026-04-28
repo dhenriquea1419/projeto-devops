@@ -1,79 +1,91 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface User {
   id: string;
-  email: string;
   name: string;
+  email: string;
   role: 'vendedor' | 'representante' | 'admin';
 }
 
-const AuthContext = createContext<{
+interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   error: string | null;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<boolean>;
   signOut: () => void;
-}>({} as any);
+}
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+const mockUsers: Array<User & { password: string }> = [
+  {
+    id: '1',
+    name: 'Vendedor João',
+    email: 'vendedor@farmacia.com',
+    role: 'vendedor',
+    password: '123456',
+  },
+  {
+    id: '2',
+    name: 'Maria Representante',
+    email: 'representante@farmacia.com',
+    role: 'representante',
+    password: '123456',
+  },
+  {
+    id: '3',
+    name: 'Admin Farmácia',
+    email: 'admin@farmacia.com',
+    role: 'admin',
+    password: '123456',
+  },
+];
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Usuários de exemplo (simulação de banco de dados)
-  const validUsers = [
-    {
-      id: '1',
-      email: 'vendedor@farmacia.com',
-      password: '123456',
-      name: 'João Vendedor',
-      role: 'vendedor' as const,
-    },
-    {
-      id: '2',
-      email: 'representante@farmacia.com',
-      password: '123456',
-      name: 'Maria Representante',
-      role: 'representante' as const,
-    },
-    {
-      id: '3',
-      email: 'admin@farmacia.com',
-      password: '123456',
-      name: 'Admin Farmácia',
-      role: 'admin' as const,
-    },
-  ];
-
-  const signIn = async (email: string, password: string) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      // Simula delay de requisição
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      const foundUser = validUsers.find(
-        (u) => u.email === email && u.password === password
-      );
-
-      if (!foundUser) {
-        throw new Error('Email ou senha incorretos');
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser) as User;
+        setUser(parsedUser);
+      } catch (e) {
+        localStorage.removeItem('user');
       }
+    }
+    setIsLoading(false);
+  }, []);
 
-      const { password: _, ...userWithoutPassword } = foundUser;
-      setUser(userWithoutPassword);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao fazer login');
-      throw err;
-    } finally {
-      setIsLoading(false);
+  const signIn = async (email: string, password: string): Promise<boolean> => {
+    console.log('signIn called with:', email);
+    setError(null);
+
+    const foundUser = mockUsers.find((u) => u.email === email && u.password === password);
+
+    if (foundUser) {
+      const userToSet: User = {
+        id: foundUser.id,
+        name: foundUser.name,
+        email: foundUser.email,
+        role: foundUser.role,
+      };
+      setUser(userToSet);
+      localStorage.setItem('user', JSON.stringify(userToSet));
+      console.log('user updated:', userToSet);
+      return true;
+    } else {
+      setError('Credenciais inválidas');
+      return false;
     }
   };
 
   const signOut = () => {
     setUser(null);
     setError(null);
+    localStorage.removeItem('user');
   };
 
   return (
@@ -81,6 +93,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthContextProvider');
+  }
+  return context;
+};

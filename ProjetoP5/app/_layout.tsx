@@ -1,43 +1,59 @@
-import { useEffect } from 'react';
-import { Stack, useRouter, useSegments } from 'expo-router';
-import { View, ActivityIndicator } from 'react-native';
-import { AuthProvider, useAuth } from '../hooks/AuthContext';
+import React, { useEffect } from 'react';
+import { useRouter, useSegments, Slot } from 'expo-router';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { AuthContextProvider, useAuth } from '../hooks/AuthContext';
 
-function RootLayoutNav() {
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
+
+const RootLayoutInner = () => {
   const { user, isLoading } = useAuth();
   const router = useRouter();
-  // useSegments imported but not used to avoid loops
+  const segments = useSegments();
 
   useEffect(() => {
-    if (isLoading) return;
+    console.log('Debug:', {
+      isLoading,
+      user: !!user,
+      segments,
+    });
 
-    if (user === null) {
-      router.replace('/login');
-    } else {
-      router.replace('/(tabs)');
+    if (!isLoading) {
+      if (user !== null && segments[0] !== '(tabs)') {
+        router.replace('/(tabs)');
+      } else if (user === null && segments[0] !== 'login') {
+        router.replace('/login');
+      }
     }
-  }, [user, isLoading, router]);
-
-  if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator />
-      </View>
-    );
-  }
+  }, [isLoading, user, segments, router]);
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="login" options={{ headerShown: false }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-    </Stack>
+    <View style={styles.container}>
+      <Slot />
+      {isLoading && (
+        <View style={styles.overlay}>
+          <ActivityIndicator size="large" color="#0000ff" />
+        </View>
+      )}
+    </View>
   );
-}
+};
 
-export default function RootLayout() {
+const RootLayout = () => {
   return (
-    <AuthProvider>
-      <RootLayoutNav />
-    </AuthProvider>
+    <AuthContextProvider>
+      <RootLayoutInner />
+    </AuthContextProvider>
   );
-}
+};
+
+export default RootLayout;
