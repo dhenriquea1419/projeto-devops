@@ -1,24 +1,59 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import React, { useEffect } from 'react';
+import { useRouter, useSegments, Slot } from 'expo-router';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { AuthContextProvider, useAuth } from '../hooks/AuthContext';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+const RootLayoutInner = () => {
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+  const segments = useSegments();
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  useEffect(() => {
+    console.log('Debug:', {
+      isLoading,
+      user: !!user,
+      segments,
+    });
+
+    if (!isLoading) {
+      if (user !== null && segments[0] !== '(tabs)') {
+        router.replace('/(tabs)');
+      } else if (user === null && segments[0] !== 'login') {
+        router.replace('/login');
+      }
+    }
+  }, [isLoading, user, segments, router]);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <View style={styles.container}>
+      <Slot />
+      {isLoading && (
+        <View style={styles.overlay}>
+          <ActivityIndicator size="large" color="#0000ff" />
+        </View>
+      )}
+    </View>
   );
-}
+};
+
+const RootLayout = () => {
+  return (
+    <AuthContextProvider>
+      <RootLayoutInner />
+    </AuthContextProvider>
+  );
+};
+
+export default RootLayout;
