@@ -1,55 +1,59 @@
-// Importação das dependências necessárias
 const express = require('express');
-const dotenv = require('dotenv');
 const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
+require('dotenv').config();
 
-dotenv.config();
+const authRoutes = require('./src/routes/auth');
 
-const app = express();
-
-app.use(cors()); // Habilita CORS
-app.use(helmet()); // Segurança HTTP headers
-app.use(morgan('combined')); // Logs de requisições
-app.use(express.json()); // Parser de JSON
-
-app.get('/', (req, res) => {
-  res.json({ mensagem: 'Sistema de Vendas em Farmácia - Backend funcionando perfeitamente!' });
-});
-
-const { connectDB } = require('./src/config/database.js');
-
-async function iniciarServidor() {
-  try {
-    console.log('🔄 Tentando conectar ao banco de dados...');
-    await connectDB();
-    console.log('✅ Conexão com o banco de dados estabelecida com sucesso!');
-
-    // Inicia o servidor
-    const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => {
-      console.log(`🚀 Servidor rodando na porta ${PORT}`);
-      console.log('💊 Sistema de Vendas em Farmácia - Backend ativo e pronto para uso!');
-    });
-  } catch (erro) {
-    console.error('❌ Erro ao conectar com o banco de dados:', erro);
-    process.exit(1);
-  }
+// Validação JWT_SECRET
+if (!process.env.JWT_SECRET) {
+  console.error('❌ JWT_SECRET não está definido no arquivo .env');
+  process.exit(1);
 }
 
-app.use((req, res) => {
-  res.status(404).json({ erro: 'Rota não encontrada no sistema.' });
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Configuração de CORS para Expo/React Native
+app.use(cors({
+  origin: [
+    'http://localhost:19006',
+    'http://localhost:8081',
+    'http://localhost:19000'
+  ],
+  credentials: true
+}));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Rota de health check
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    message: 'Server is running',
+    timestamp: new Date().toISOString()
+  });
 });
 
-app.use((err, req, res, next) => {
-  console.error('💥 Erro no servidor:', err.stack);
-  res.status(500).json({ erro: 'Erro interno do servidor. Tente novamente mais tarde.' });
-});
+// Rotas de autenticação
+app.use('/api/auth', authRoutes);
 
-iniciarServidor();
+// Função para iniciar o servidor (mantida)
+async function iniciarServidor() {
+  app.listen(PORT, () => {
+    console.log(`🚀 Servidor rodando na porta ${PORT}`);
+    console.log('✅ Pronto para receber requisições!');
+  }).on('error', (err) => {
+    console.error('❌ Erro ao iniciar o servidor:', err);
+    process.exit(1);
+  });
+}
 
+// Tratamento de SIGTERM (mantido)
 process.on('SIGTERM', () => {
-  console.log('🛑 Servidor encerrando...');
+  console.log('🛑 SIGTERM recebido. Encerrando servidor graciosamente...');
   process.exit(0);
 });
+
+// Inicia o servidor
+iniciarServidor();
